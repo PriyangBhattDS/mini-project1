@@ -16,7 +16,7 @@ from mlflow.models import infer_signature
 # Initialize DagsHub for experiment tracking
 import dagshub
 dagshub.init(repo_owner='bhattpriyang', repo_name='mini-project1', mlflow=True)
-mlflow.set_experiment("Water Potability Prediction")
+mlflow.set_experiment("Final_model")
 mlflow.set_registry_uri("https://dagshub.com/bhattpriyang/mini-project1.mlflow")
 
 
@@ -112,7 +112,7 @@ def main():
         model = load_model(model_path)
 
         # Start MLflow run
-        with mlflow.start_run():
+        with mlflow.start_run() as run:
             metrics = evaluation_model(model, X_test, y_test, model_name)
             save_metrics(metrics, metrics_path)
 
@@ -126,6 +126,12 @@ def main():
             signature = infer_signature(X_test,model.predict(X_test))
 
             mlflow.sklearn.log_model(model,"Best Model",signature=signature)
+
+             # Save run ID and model info to JSON
+            run_info = {'run_id': run.info.run_id, 'model_name': "Best Model"}
+            reports_path = "reports/run_info.json"
+            with open(reports_path, 'w') as file:
+                json.dump(run_info, file, indent=4)
 
     except Exception as e:
         raise Exception(f"An Error occurred: {e}")
